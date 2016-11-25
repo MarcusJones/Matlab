@@ -1,0 +1,8 @@
+FirstDate = datestr(DatedData(1,1))
+LastDate = datestr(DatedData(length(DatedData(:,1)),1))
+
+% N = datenum(Y, M, D, H, MN, S)
+% Start = datenum(2008, 6, 13, HH(i), MM(i), 0);
+% End
+
+find(Air.Amb(:,2)==26.0400)

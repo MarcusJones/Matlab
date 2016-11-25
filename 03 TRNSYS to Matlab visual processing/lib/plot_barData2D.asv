@@ -1,0 +1,44 @@
+%% Integrate the power column for each month, store in a n x 12 array
+% The headers will be in one column array
+
+function plot_barData2D(bDataPowerAll, trnTime)
+
+[Y, M, D, H, MN, S] = datevec(trnTime.time(2) - trnTime.time(1));
+Interval = H + MN/60 + S/3600;
+
+powerMatrix = [];
+powerConsumers = {};
+powerMonths = {};
+% Loop each power point;
+for iPwrPoint = 1:length(bDataPowerAll);
+    % Loop each month
+    powerConsumers{iPwrPoint} = bDataPowerAll{iPwrPoint}.description;
+    startDnum = datenum(2000,1,0,0,0,0);
+    for iMonth = 2:13
+        currStartDnum = datenum(2000,iMonth-1,0,0,0,0);
+        currEndDnum = datenum(2000,iMonth,0,0,0,0);
+        powerMonths{iMonth-1} = datestr(currEndDnum,'mmm');
+        %currEndDnum - currStartDnum
+        currMask =((trnTime.time>=currStartDnum) & (trnTime.time<=currEndDnum));
+        powerMatrix(iPwrPoint,iMonth-1) = sum(bDataPowerAll{iPwrPoint}.data(currMask))*Interval;
+    end
+end
+
+% Sum all the monthly values
+barDataTotal = sum(powerMatrix,2);
+barDataGrandTotal = sum(barDataTotal);
+
+
+%barDataTotal = sort(barDataTotal,'descend');
+bar(barDataTotal);
+
+set(gca,'XTickLabelMode','manual');
+set(gca,'XTick',1:length(bDataPowerAll));
+set(gca,'XTickLabel',powerConsumers);
+ylabel('Energy [kWh]');
+rotateticklabel(gca,90);
+
+text(1,1,sprintf('Total energy %f MWh',barDataGrandTotal/1000),'FontName','Arial','FontWeight','Bold')
+
+
+end

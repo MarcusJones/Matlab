@@ -1,0 +1,52 @@
+function VapPresLiCl = VapPresLiCl(T,C)
+
+% Based on Conde 2003 (Ref. 212)
+% Uses empircal fit to calculate vapor pressure of solution given 
+% Temperature T [K]
+% Concentration C [%]
+% Returns relative vapor pressure [-]
+
+Temp = T + 273.15;
+MF = C/100;
+
+CritTWater = 373.9 + 273.15; % Critical temperature of water
+CritPresWater = 22.059 * 1000; % Critical pressure of water
+% CritDensWater = 322; % [kg/m3]
+phi = Temp./CritTWater; % Reduced temperature
+tau = 1 - phi; 
+
+P0 =  0.28;
+P1 =  4.30;
+P2 =  0.60;
+P3 =  0.21;
+P4 =  5.10;
+P5 =  0.49;
+P6 =  0.362;
+P7 = -4.75;
+P8 = -0.40;
+P9 =  0.03;
+
+A = 2 - (1 + (MF./P0).^P1).^P2;
+B = (1 + (MF./P3).^P4).^P5 - 1;
+
+f = A + phi.*B;
+
+Exponent = -1.*((MF - 0.1).*2 ./ 0.005);
+
+P25 = 1 - (1 + (MF./P6).^P7).^P8 - P9*exp(Exponent);
+
+VapPresLiClRel = P25 .* f;
+
+A0 = -7.858230;
+A1 =  1.839910;
+A2 = -11.781100;
+A3 =  22.670500;
+A4 = -15.9393;
+A5 =  1.775160;
+
+Exponent2 = (A0.*tau + A1.*tau.^1.5 + A2.*tau.^3 + A3.*tau.^3.5 + A4.*tau.^4 +...
+    A5.*tau.^7.5)./(1-tau);
+
+VapPresH2O = exp(Exponent2).*CritPresWater; % Vapor Pressure in kPa
+
+VapPresLiCl = VapPresLiClRel.*VapPresH2O;

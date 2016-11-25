@@ -1,0 +1,23 @@
+Start = rawdata(1,4);
+
+
+% 4th column runs from 0 to 2359 minutes
+
+MainIndex = 0;
+while (MainIndex <= length(rawdata(:,1)))
+    MainIndex = MainIndex + 1;
+
+    for i = 0:2359
+        if rawdata(MainIndex,4) ~= i
+            'Error'
+        end
+        if (MainIndex <= length(rawdata(:,1)))
+            MainIndex = MainIndex + 1;
+        end
+    end
+
+end
+
+
+clear Start MainIndex
+

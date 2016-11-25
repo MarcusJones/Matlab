@@ -1,0 +1,26 @@
+Export as *.emf
+
+In word, use fol macro;
+
+Sub LinkedPicture()
+'
+' Macro1 Macro
+'
+'
+    Selection.Fields.Add Range:=Selection.Range, Type:=wdFieldEmpty, Text:= _
+        "INCLUDEPICTURE  ", PreserveFormatting:=True
+End Sub
+
+
+In word, will see Error! Filename not specified.
+Use the F9 (shift, alt) to toggle
+Will see;
+
+{INCLUDEPICTURE \*MERGEFORMAT}
+
+Change to;
+{INCLUDEPICTURE untitled.emf\*MERGEFORMAT}
+
+With untitled.emf in the same directory
+
+Toggle back DONE

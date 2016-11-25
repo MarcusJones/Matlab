@@ -1,0 +1,42 @@
+% Script to plot statistics of a given loop, or collection of data points
+
+% MJones - 01 AUG 2009 - Created file
+% MJones - 22 AUG 2009 - Update to deal with heirarchical data, modified
+% from original
+
+
+function plot_psychro_all(trnData,trnTime)
+
+% Store the names of the systems
+trnSystems = fieldnames(trnData);
+% Loop through the systems
+for i = 1:length(trnSystems)
+
+    % Store the names of the states
+    trnStates = fieldnames(trnData.(trnSystems{i}));
+    % Loop through the sates
+    for j = 1:length(trnStates)
+
+        % Check for a psychrometric state, defined by the system name
+        if strcmp(trnStates{j},'HA')
+            % Rename the current system-state array
+            currSys = trnData.(trnSystems{i}).(trnStates{j});
+            % Initialize the temperature, humidity, and label
+            Tv = [];
+            Wv = [];
+            labels = {};
+
+            % Loop through each point in the system-state
+            for k = 1:length(currSys)
+                % Assemble T, w, name
+                Tv = [Tv currSys{k}.data(end,1)];
+                Wv = [Wv currSys{k}.data(end,2)];
+                labels = [labels ['State ' int2str(currSys{k}.number)]];
+            end
+
+            % Plot the assembly
+            plot_psychro(Tv,Wv,labels,);
+        end
+    end
+
+end

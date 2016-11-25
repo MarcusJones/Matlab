@@ -1,0 +1,47 @@
+%% function plotyy_pData(trnTime,pStruct)
+% S. Ledinger - 04 Sep 09 modified original "plot_pData.m" to plot on two y
+% axes
+%
+
+% Inputs:
+% timeStruct - A properly formed time structure
+% pStructyl    - A properly formed plot data structure for left y axis
+% pStructyr    - A properly formed plot data structure for right y axis
+
+% Outputs:
+% Plot with units, title, legend
+
+
+function plotyy_pData(timeStruct,pStructyL,pStructyR)
+
+figure
+hold on
+
+a1 = subplot(1,1,1);
+
+[AX,H1,H2] = plotyy(timeStruct.time(timeStruct.mask),...
+    [...
+    pStructyL.Data(timeStruct.mask,:)
+    ],...
+    timeStruct.time(timeStruct.mask),...
+    [...
+    pStructyR.Data(timeStruct.mask,:)
+    ]);
+
+datetick2 
+
+ylabel(AX(1), pStructyL.yLabel, 'interpreter', 'none');
+ylabel(AX(2), pStructyR.yLabel, 'interpreter', 'none');
+
+xlabel('Time')
+
+name = [pStructyL.Title ', from ' ...
+    datestr(timeStruct.Range.start, 'dd-mmmm-yy HH:MM') ' to  ' ...
+    datestr(timeStruct.Range.end, 'dd-mmmm-yy HH:MM')];
+
+title(name)
+
+legendNamesL = strcat(pStructyL.Headers, '_', pStructyL.Names, ' ', pStructyL.Units);
+legendNamesR = strcat(pStructyR.Headers, '_', pStructyR.Names, ' ', pStructyR.Units);
+
+legend([H1;H2],[legendNamesL,legendNamesR], 'location', 'NorthEast', 'interpreter', 'none')

@@ -1,0 +1,8 @@
+clear
+% a='asdf'
+inp = [1 2]
+outp = [0.9 0.8 0.3]
+a ='W'
+b = {'x' 'y'}
+drawSankey(4,outp,a,b);
+'sankey drawn'

@@ -1,0 +1,329 @@
+function varargout=newinterface(varargin)
+%an interface for viewing the sensordata provided by Renate
+%all variables are initialized to be availiable to the nested functions
+season=[];
+sensordata=[];
+x=[];y=[];z=[];
+xgrid=[]; ygrid=[]; zgrid=[];
+anzahl=[];
+handleslice=[];
+currentpoints=[];
+currentvectors=[];
+%the function initall loads the coordinates and creates the meshes for
+%plotting from them
+initall;
+mainfig=figure;
+figure(mainfig);
+set(mainfig,'Menubar','none','Units','Pixels','Position',[10,10,1500,900]);
+liste=uicontrol(mainfig,'Units','normalized','Style','listbox','Min',1,'Max',1, ...
+    'Position',[0.88,0.05,0.11,0.9],'Callback',@Plotdata,'BackgroundColor','w');
+show_values=uicontrol(mainfig,'Units','normalized','Style','checkbox', ...
+    'Position',[0.85,0.95,0.07,0.05],'Callback',@Plotdata,'String','Show Values');
+show_sensornumbers=uicontrol(mainfig,'Units','normalized','Style','checkbox', ...
+    'Position',[0.92,0.95,0.07,0.05],'Callback',@Plotdata,'String','Show Sensor #');
+papier=axes('Position',[0.05 0.05 0.87 0.9]);
+set(mainfig,'Currentaxes',papier);
+view([45,45]);
+plot_room; %creates the line representation of the room
+tools=uitoolbar(mainfig);
+%every button is created by loading an image (some are provided as .mat
+%files for faster processing by MATLAB, although the naming is not
+%consistent
+%fist create the standard buttons
+d=load([matlabroot,'\toolbox\matlab\icons\zoom.mat'],'zoomCData');
+uipushtool(tools,'Cdata',d.zoomCData,'ClickedCallback','zoom on');
+d=load([matlabroot,'\toolbox\matlab\icons\pan.mat'],'cdata');
+uipushtool(tools,'Cdata',d.cdata,'ClickedCallback','pan');
+d=load([matlabroot,'\toolbox\matlab\icons\rotate.mat'],'cdata');
+uipushtool(tools,'Cdata',d.cdata,'ClickedCallback','rotate3d');
+d=load([matlabroot,'\toolbox\matlab\icons\opendoc.mat'],'cdata');
+uipushtool(tools,'Cdata',d.cdata,'ClickedCallback',{@readData});
+d=load([matlabroot,'\toolbox\matlab\icons\datatip.mat'],'cdata');
+anzeiger=uitoggletool(tools,'Cdata',d.cdata,'ClickedCallback',@freshdatafunction);
+% button to overide the season determined from the sensordata
+d=imread('graphics\Summer_Winter.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@swapseason});
+% three buttons for the iso surfaces
+d=imread('graphics\lower_level.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@Plotdata,0.5});
+d=imread('graphics\middle_level.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@Plotdata,1.5});
+d=imread('graphics\upper_level.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@Plotdata,2.5});
+%four buttons to go back and forth in time
+d=imread('graphics\minus_hour_icon.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@timechange,-60});
+d=imread('graphics\plus_hour_icon.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@timechange,60});
+d=imread('graphics\minus_day_icon.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@timechange,-1440});
+d=imread('graphics\plus_day_icon.JPG');
+uipushtool(tools,'Cdata',d,'ClickedCallback',{@timechange,1440});
+clear d;
+readData(0,0);
+    function output_txt=freshdatafunction(obj,event_obj)
+        % implements a new data cursor mode
+        handler=datacursormode(mainfig);
+        set(handler,'SnapToDataVertex','off');
+        set(handler,'Updatefcn',@datasearch);        
+        if strcmp(get(anzeiger,'State'),'on')
+            set(handler,'Enable','on');
+        else
+            set(handler,'Enable','off');
+        end
+        newer=figure(
+        function out_text=datasearch(obj,event_obj)
+            % subfunction for the new datacursor
+            idx=get(event_obj,'DataIndex');
+            %number just incredibly high to avoid confusion with other figures that may be open
+            % the plot consist of two objects, the vectors for the
+            % velocities and the points for the data; according to in which
+            % object the datatip is placed, the right data series has to be
+            % chosen
+            if get(event_obj,'Target')==currentpoints; 
+                plot(sensordata(idx+20,:));
+            else
+                plot(sensordata(idx,:));
+            end
+            out_text=num2str('DataIndex');
+        end
+    end
+
+    function timechange(src,eventdata,change)
+        % change is the number of minutes you want to go back or forth
+        % src and eventdata are passed by MATLAB and required
+        current=get(liste,'Value');
+        if (current+change>0) && (current+change<=anzahl)
+            set(liste,'Value',current+change);
+            Plotdata(0,0);
+        end
+    end
+    function swapseason(src,eventdata)
+        % manually overide the season
+        % src and eventdata are passed by MATLAB and required
+        season=~season;
+        if season %true=winter
+            caxis([15 22]);
+        else
+            caxis([22 32]);
+        end
+    end
+
+    function Plotdata(src,eventdata,varargin)
+        % plot the datapoints at the selected time
+        % varargin may be used to request an isosurface at a given height
+        % src and eventdata are passed by MATLAB and required
+        timeselected=get(liste,'Value');
+        cla
+        plot_room()
+        hold on
+        currentslice=0;
+        %check if a isoslice was requested
+        if (nargin>2)&&(varargin{1})
+            currentslice=varargin{1};
+        end
+        %if so, draw the slice
+        if currentslice > 0
+            xs=x(20:69);
+            ys=y(20:69);
+            zs=z(20:69);
+            vs=sensordata(20:69,timeselected);
+            m=griddata3(xs,ys,zs,vs,xgrid(:,:,(currentslice+0.5)),ygrid(:,:,(currentslice+0.5)),zgrid(:,:,(currentslice+0.5)));
+            %creates interpolation as the levels are at 0.5,1.5 and 2.5 meters,
+            %adding 0.5 gives you the 1st, 2nd or 3rd high level from the z
+            %direction
+            %plots the selected slice, turns of the edgs and makes it
+            %translucent
+            handleslice=surf(xgrid(:,:,(currentslice+0.5)),ygrid(:,:,(currentslice+0.5)),zgrid(:,:,(currentslice+0.5)),m);
+            set(handleslice,'EdgeColor','none');
+            alpha(0.4);
+        end
+        % arrows for speed
+        currentvectors=quiver3(x(1:19),y(1:19),z(1:19),zeros(19,1),zeros(19,1),sensordata(1:19,timeselected),0.25,'Color','b');
+        pointsize=ones(1,50)*60;
+        currentpoints=scatter3(x(20:69),y(20:69),z(20:69),pointsize,sensordata(20:69,timeselected),'^','filled'); % dots for temperature
+        % choice of annotation with sensor numbers and values
+        % sensor number and/or value can be displayed; speed has 3 significan
+        % decimal places, temperature one significan decimal place
+        zahlen=get(show_values,'Value');
+        buchstaben=get(show_sensornumbers,'Value');
+        aktuellereihe=sensordata(:,timeselected);
+        if zahlen==1 || buchstaben==1
+            for i=1:8 %first eight speed sensors (9 ist missing for some reason)
+                v=[];
+                if buchstaben==1
+                    v=[v, 'Nr.', num2str(i)];
+                end
+                if zahlen
+                    v=[v, num2str(aktuellereihe(i),'%1.3f'), 'm/s'];
+                end
+                text(x(i),y(i),z(i)-0.5,v);
+            end
+            for i=9:19 %speed sensors 10-20
+                v='';
+                if buchstaben
+                    v=[v, 'Nr. ', num2str(i+1)];
+                end
+                if zahlen
+                    v=[v, ' ',num2str(aktuellereihe(i),'%1.3f'), 'm/s'];
+                end
+                text(x(i),y(i),z(i)-0.5,v);
+            end
+            for i=20:69 %temperature sensors
+                v='';
+                if buchstaben
+                    v=[v, 'Nr. ', num2str(i+1)];
+                end
+                if zahlen
+                    v=[v, ' ',num2str(aktuellereihe(i),'%2.1f'), '°C'];
+                end
+                text(x(i),y(i),z(i)-0.5,v);
+            end
+        end
+        colorbar('WestOutside');
+        if season %true=winter
+            caxis([15 22]);
+        else
+            caxis([22 32]);
+        end
+    end
+    function plot_room()
+        %creates the line representation of the room
+        points=[-2.95 0 ; 19.85 0; 19.85 7.73; 18.41 7.73; 18.41 11.62; 0 11.62 ; 0 5.12; -2.95 5.12; -2.95 0];
+        pointslow=[points,zeros(9,1)];
+        pointshigh=[points,zeros(9,1)+2.97];
+        hold on
+        line(pointslow(:,1),pointslow(:,2),zeros(1,9));
+        line(pointslow(:,1),pointslow(:,2),zeros(1,9)+2.97);
+        for i=1:8
+            line([pointslow(i,1),pointshigh(i,1)],[pointslow(i,2),pointshigh(i,2)],[pointslow(i,3),pointshigh(i,3)]);
+        end
+        %first rectangle
+        pointsrect1=[3.6 1.6; 7.05 1.6; 7.05 5.12; 3.6 5.12 ; 3.6 1.6];
+        pointsrect1low=[pointsrect1,zeros(5,1)];
+        pointsrect1high=[pointsrect1,zeros(5,1)+2.97];
+        line(pointsrect1low(:,1),pointsrect1low(:,2),zeros(1,5),'Color','r');
+        line(pointsrect1low(:,1),pointsrect1low(:,2),zeros(1,5)+2.97,'Color','r');
+        for i=1:4
+            line([pointsrect1low(i,1),pointsrect1high(i,1)],[pointsrect1low(i,2),pointsrect1high(i,2)],[pointsrect1low(i,3),pointsrect1high(i,3)],'Color','r');
+        end
+        %second rectangle
+        pointsrect2=[13.7 1.6; 18.75 1.6; 18.75 5.12; 13.7 5.12 ; 13.7 1.6];
+        pointsrect2low=[pointsrect2,zeros(5,1)];
+        pointsrect2high=[pointsrect2,zeros(5,1)+2.97];
+        line(pointsrect2low(:,1),pointsrect2low(:,2),zeros(1,5),'Color','r');
+        line(pointsrect2low(:,1),pointsrect2low(:,2),zeros(1,5)+2.97,'Color','r');
+        for i=1:4
+            line([pointsrect2low(i,1),pointsrect2high(i,1)],[pointsrect2low(i,2),pointsrect2high(i,2)],[pointsrect1low(2,3),pointsrect1high(2,3)],'Color','r');
+        end
+        axis equal
+    end
+
+    function readData(src,eventdata)
+        [datei,pfad]=uigetfile('.mwd');
+        datafile=fopen([pfad datei]);
+        %contruct format string for known data structure
+        v='%s %s';
+        for i=1:69
+            v=[v,' %f'];
+        end
+        data=textscan(datafile,v,'Headerlines',7); %data imported starting with line 8
+        fclose(datafile);
+        anzahl=length(data{1});
+        datum=cell2mat(data{1});
+        month=str2double(datum(1,4:5));
+        if month<4 || month >9
+            season=1; %winter=true
+        else
+            season=0; %summer=false
+        end
+        zeit=cell2mat(data{2});
+        blanks=repmat('  ',anzahl,1);
+        timestamps=[datum,blanks,zeit];
+        numdaten=zeros(69,anzahl); %data is organised in cells and colums, but needed in rows, therefore reformatted
+        for j=1:69
+            numdaten(j,:)=data{j+2};
+        end
+        sensordata=numdaten;
+        clear numdaten
+        set(liste,'String',timestamps);
+        set(liste,'Value',1);
+    end
+
+    function initall()
+        %creates the coordinates for the datapoints
+        coords=[2.135	3.378	0.497	; % x y and z a hard coded here
+            3.5	11.00	1.243	;
+            3.5	11.00	2.494	;
+            12.793	10.532	0.534	;
+            2.135	3.4	1.465	;
+            12.793	10.620	2.513	;
+            12.813	10.534	1.517	;
+            19.275	3.895	1.475	;
+            9.226	10.5	2.486	;
+            3.5	11.00	0.827	;
+            3.5	11.00	0.415	;
+            17.598	10.213	0.599	;
+            9.228	10.5	1.489	;
+            3.5	11.00	2.089	;
+            19.287	3.897	0.488	;
+            9.324	3.413	1.520	;
+            9.228	10.478	0.489	;
+            3.5	11.00	1.669	;
+            9.324	3.408	0.530;
+            17.582	11.005	2.450	;
+            17.605	11.020	1.506	;
+            17.594	11.009	0.503	;
+            17.527	11.805	0.392	;
+            17.608	8.312	2.488	;
+            17.598	8.297	1.490	;
+            17.692	8.285	0.516	;
+            19.125	5.680	2.467	;
+            19.191	5.684	1.479	;
+            19.196	5.693	0.474	;
+            19.193	2.880	2.415	;
+            19.166	2.860	1.474	;
+            19.183	2.890	0.483	;
+            12.788	11.113	2.466	;
+            12.798	11.138	1.486	;
+            12.813	11.131	0.478	;
+            12.780	5.700	2.490	;
+            12.776	5.685	1.479	;
+            12.780	5.712	0.499	;
+            12.780	8.430	2.462	;
+            12.794	8.418	1.427	;
+            12.757	8.429	0.461	;
+            12.776	2.840	1.489	;
+            9.2	11.130	2.477	;
+            9.2	11.150	1.474	;
+            9.2	11.1	0.508	;
+            9.2	5.690	2.508	;
+            9.2	5.7	1.489	;
+            9.2	5.676	0.508	;
+            9.2	8.460	2.432	;
+            9.2	8.426	1.436	;
+            9.2	8.430	0.487	;
+            9.168	2.870	1.458	;
+            0.83	11.935	0.403	;
+            2.01	11.149	2.512	;
+            2.031	11.131	1.479	;
+            2.044	11.137	0.483	;
+            2.019	5.687	1.504	;
+            2.037	5.695	2.500	;
+            2.03	5.672	0.505	;
+            2.036	8.437	2.432	;
+            2.035	8.397	1.436	;
+            2.034	8.419	0.499	;
+            2.008	2.830	1.476	;
+            0.8	-0.14	0.01	;
+            3.3	-0.08	2.750	;
+            10.51	-0.08	2.772	;
+            15.690	-0.22	0.01	;
+            0 0 0 ; %wrong numbers as a substitute for missing data
+            8.631	13.090	1.457];
+        x=coords(:,1);
+        y=coords(:,2);
+        z=coords(:,3);
+        [xgrid ygrid zgrid]=meshgrid((-0.5:0.1:19.5),(-0.5:0.5:13.5),[0.5 1.5 2.5]);
+    end
+end

@@ -1,0 +1,47 @@
+clear
+
+LoadRawData             % Loads data and appends the date serial number
+LoadDataLabels          % A simple label file for column headers
+ProcessDataDesiccant    % Load concentration data into array
+ProcessDataAir          % Writes the air data
+DateMask                % Loads two date ranges
+
+PlotOverview            % Quick plot of most variables, time mask 1
+PlotPsychro             % Psych plot over time mask 1
+PlotConcentration       % Same as overview, but with concentrations instead of flow rates
+
+% Plots a psych chart over mask 2
+TwoPointMollier4(Air.Amb(TimeMask2,2),Air.Amb(TimeMask2,4),Air.Proc(TimeMask2,2),Air.Proc(TimeMask2,4));
+
+% Plot temp diff?
+New = DatedData(TimeMask,L.THotIn) - DatedData(TimeMask,L.THotOut);
+
+plot(New(150:450))
+sum(New(150:450))/length(New(150:450))
+
+
+% Plot power consumption
+plot(DatedData(TimeMask,1),...
+        [...
+        DatedData(TimeMask,L.Power)...
+        ],'LineWidth',2)
+%set(gca,'XTick',[1,2,3,4,5,6]) % Doesn't work?
+datetick('x',15)
+ylabel('Power (kW)')
+xlabel('Time')
+%ylim([0 100]);
+title('Total power consumption')
+legend(...
+    Headers(L.Power,:)...
+    )
+
+% RH data export
+for i = 
+DatedData(TimeMask',L.RHamb)
+   DatedData(TimeMask,L.RH_fan)...
+    DatedData(TimeMask,L.RHcal)...
+    ],'LineWidth',2)
+
+% load AILpsyc
+% 
+% AILpsyc(:,3) = Wratio(AILpsyc(:,1),101300,AILpsyc(:,2));

@@ -1,0 +1,38 @@
+% This script compiles the cold water state data
+
+
+% Assumption, taken from a manual average of cold flow data
+FlowAvg = 88.9285;
+
+% For two state positions and flow 
+Cold.HdrTemp = char(...
+    'CondIn',... 
+    'CondOut'...
+    );
+
+Cold.HdrFlow = char(...
+    'ColdFlow'... 
+    );
+
+% Ambient air data
+Cold.Temp = [...
+    DatedData(:,L.TCoolIn),... % Regen inlet
+    DatedData(:,L.TCoolOut),...  %Ambient RH
+    ];
+
+Cold.Flow = ...
+    DatedData(:,L.LPMCool)...
+    ;
+
+% Write the average flow
+for i = 1:length(Cold.Flow)
+    if Cold.Flow(i) ~= 0;
+        Cold.FlowAvg(i) = FlowAvg;
+    else 
+        Cold.FlowAvg(i) = 0;
+    end
+end
+
+Cold.FlowAvg = Cold.FlowAvg';
+
+clear FlowAvg

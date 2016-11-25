@@ -1,0 +1,22 @@
+function HourMin = HourMin(HHMM)
+
+% Convert HHMM to HH
+
+% Convert to string
+str = int2str(HHMM);
+
+% Check length
+Lngth = size(str) ;
+Lngth = Lngth(1);
+
+if Lngth <= 1 
+    strcat ('000',str);
+elseif Lngth <= 2 
+    strcat ('00',str);
+elseif Lngth <= 3
+    strcat ('0',str);
+end
+
+
+
+end

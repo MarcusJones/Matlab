@@ -1,0 +1,192 @@
+% This script compiles the enthalpy flow rates [kJ/hr] 
+% and performance parameters
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Water sorption rates
+% For conditioner, both delta W and delta C give rate
+% For regenerator, only delta C is available, until enthalpy balance is
+% completed
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Perf.C.WA_Air = Air.FlowKH.*(Air.Amb.W - Air.Proc.W); % [kg/hr]
+Perf.C.WA_Des = Des.C.FlowInKH.*(Des.C.ConcIn./Des.C.ConcOut-1); % [kg/hr]
+ 
+Perf.R.WR_Des = Des.R.FlowInKH.*(Des.R.ConcOut./Des.R.ConcIn-1); % [kg/hr]
+% Can't calc R.WR_Air yet!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Update desiccant data by adding the corrected outlet flow rate 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Des.C.FlowOutKH_Air = Des.C.FlowInKH + Perf.C.WA_Air;   % [kg/hr]
+Des.C.FlowOutKH_Des = Des.C.FlowInKH + Perf.C.WA_Des;   % [kg/hr]
+Des.R.FlowOutKH_Des = Des.R.FlowInKH - Perf.R.WR_Des;   % [kg/hr]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of cooling water 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Cond.CW.In = ...
+    Cold.FlowKH .* (... % Flow rate [kg/hr]
+    Cold.Temp.In.* ... % Temp [deg C]
+    interp1(WaterProps.Temp, ...
+    WaterProps.SpecHeat,Cold.Temp.In,'pchip') ... Cp [kJ/kg/degC]
+    ); % [kJ/hr]
+Enthalpy.Cond.CW.Out = ...
+    Cold.FlowKH .* (... % Flow rate [kg/hr]
+    Cold.Temp.Out.* ... % Temp [deg C]
+    interp1(WaterProps.Temp, ...
+    WaterProps.SpecHeat,Cold.Temp.Out,'pchip') ... % Cp [kJ/kg/degC]
+    ); % [kJ/hr]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of heating water 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Regen.HW.In = ...
+    Hot.FlowKH.* (...      % Flow rate [kg/hr]
+    Hot.Temp.In.* ... % Temp [deg C]
+    interp1(WaterProps.Temp, ...
+    WaterProps.SpecHeat,Hot.Temp.In,'pchip') ... % Cp [kJ/kg/degC]
+    ); % [kJ/hr]
+Enthalpy.Regen.HW.Out = ...
+    Hot.FlowKH.* (...      % Flow rate [kg/hr]
+    Hot.Temp.Out.* ... % Temp [deg C]
+    interp1(WaterProps.Temp, ...
+    WaterProps.SpecHeat,Hot.Temp.Out,'pchip') ... % Cp [kJ/kg/degC]
+    ); % [kJ/hr]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of process air through conditioner 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Cond.Air.In = ... % [kJ/hr]
+    Air.FlowKH.* ... % Flow rate [kg/hr]
+    Air.Amb.H; % Enthalpy state in [kJ/kg] 
+Enthalpy.Cond.Air.Out = ... % [kJ/hr]
+    Air.FlowKH.* ... % Flow rate [kg/hr]
+    Air.Proc.H; % Enthalpy state in [kJ/kg]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of scavenging air through regenerator
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Regen.Air.In =  ...
+    Air.FlowRegenKH.* ... % Flow rate [kg/hr]
+    Air.Amb.H;   % Enthalpy state in [kJ/hr]
+% Can't calc Regen.Air.Out yet
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of desiccant stream through conditioner
+% Uses concentration data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Cond.Des.In = ...
+    Des.C.FlowInKH.*( ...    % Flow rate [kg/hr]
+    Des.C.TempIn.*CpLiCl(Des.C.TempIn,Des.C.ConcIn) ... % Enthalpy in
+    ); % kJ/hr
+Enthalpy.Cond.Des.Out = ...
+    Des.C.FlowOutKH.*( ...    % Flow rate [kg/hr]
+    Des.C.TempOut.*CpLiCl(Des.C.TempOut,Des.C.ConcOut) ... % Enthalpy out
+    ); % kJ/hr
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of desiccant stream through regenerator
+% Uses concentration!!!!
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Regen.Des.In = ...
+    Des.R.FlowInKH.*( ...    % Flow rate [kg/hr]
+    Des.R.TempIn.*CpLiCl(Des.R.TempIn,Des.R.ConcIn) ... % Enthalpy in
+    ); % kJ/hr
+Enthalpy.Regen.Des.Out = ...
+    Des.R.FlowOutKH.*( ...    % Flow rate [kg/hr]
+    Des.R.TempOut.*CpLiCl(Des.R.TempOut,Des.R.ConcOut) ... % Enthalpy out
+    ); % kJ/hr
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of conditioner absorption water, calculated from desiccant
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Cond.WA_Des = Perf.C.WA_Des .* ...
+    (interp1(WaterProps.Temp,WaterProps.Hfg, ... % Interpolatate Hfg
+    (Des.C.TempIn + Des.C.TempOut)./2,'pchip')... % Average desiccant temp
+    + Dilution_Enthalpy(... % Calculate Hdil
+    (Des.C.TempIn + Des.C.TempOut)./2,... % Average temperature
+    (Des.C.ConcIn + Des.C.ConcOut)./2)... % Average concentration
+    );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of conditioner absorption water, calculated from air
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Cond.WA_Air = Perf.C.WA_Air .* ...
+    (interp1(WaterProps.Temp,WaterProps.Hfg, ... % Interpolatate Hfg
+    (Des.C.TempIn + Des.C.TempOut)./2,'pchip')... % Average desiccant temp
+    + Dilution_Enthalpy(... % Calculate Hdil
+    (Des.C.TempIn + Des.C.TempOut)./2,... % Average temperature
+    (Des.C.ConcIn + Des.C.ConcOut)./2)... % Average concentration
+    );
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Enthalpy of regenerator desorption water, calculated from desiccant
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Regen.WR_Des = Perf.R.WR_Des .* ...
+    (interp1(WaterProps.Temp,WaterProps.Hfg, ... % Interpolatate Hfg
+    (Des.R.TempIn + Des.R.TempOut)./2,'pchip')... % Average desiccant temp
+    + Dilution_Enthalpy(... % Calculate Hdil
+    (Des.R.TempIn + Des.R.TempOut)./2,... % Average temperature
+    (Des.R.ConcIn + Des.R.ConcOut)./2)...
+    );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Using a total regenerator enthalpy balance, the missing enthalpy, 
+% Air.Out, can be calculated
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Regen.Air.Out = Enthalpy.Regen.Air.In ...
+        + Enthalpy.Regen.HW.In ...
+        + Enthalpy.Regen.Des.In ...
+        - Enthalpy.Regen.HW.Out ...
+        - Enthalpy.Regen.Des.Out; % [kJ/hr]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now fill in the state value from the flow value
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Air.Reg.H = Enthalpy.Regen.Air.Out./Air.FlowRegenKH; % [kJ/kg]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Using the two air states, go to psych chart and calc the humidity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Air.Reg.W = WRatioHT(Air.Reg.Temp,Air.Reg.H); % [kg/kg]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% With the change in air humidity, calc the water desorption rate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Perf.R.WR_Air = Air.FlowRegenKH.*(Air.Reg.W - Air.Amb.W); % [kg/hr]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% With the desorption rate, calc the associated enthalpy rate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Enthalpy.Regen.WR_Air = Perf.R.WR_Air .* ...
+    (interp1(WaterProps.Temp,WaterProps.Hfg, ... % Interpolatate Hfg
+    (Des.R.TempIn + Des.R.TempOut)./2,'pchip')... % Average desiccant temp
+    + Dilution_Enthalpy(... % Calculate Hdil
+    (Des.R.TempIn + Des.R.TempOut)./2,... % Average temperature
+    (Des.R.ConcIn + Des.R.ConcOut)./2)... % Average concentration
+    );
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Performance parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Heat exchanger effectiveness
+Perf.HX.eff = (Des.R.TempOut - Des.HX.TempOut) ./ (Des.R.TempOut - Des.HX.TempIn);
+
+% Regenerator COPs
+Enthalpy.Regen.HW.Delta = ...
+    Enthalpy.Regen.HW.Out - Enthalpy.Regen.HW.In;
+
+Perf.R.COPth_Des = -Enthalpy.Regen.WR_Des./Enthalpy.Regen.HW.Delta;
+Perf.R.COPth_Air = -Enthalpy.Regen.WR_Air./Enthalpy.Regen.HW.Delta;
+
+% plot([Enthalpy.Regen.WR_Air,-Enthalpy.Regen.HW.Delta])
+% plot([Enthalpy.Regen.WR_Des,-Enthalpy.Regen.HW.Delta])
+% plot([Perf.R.WR_Air,Perf.R.WR_Des])
+% plot(Perf.R.COPth_Des)
+% 
+% plot([Perf.R.COPth_Des,Perf.R.COPth_Air])
+% 
+% plot([Enthalpy.Regen.WR_Des,Enthalpy.Regen.WR_Air,-Enthalpy.Regen.HW.Delta])
+% figure
+% plot(Enthalpy.Regen.WR_Des - Enthalpy.Regen.HW.Delta)
+% 

@@ -1,0 +1,22 @@
+v='%s %s';
+for i=1:69
+    v=[v,' %f'];
+end
+inhalt=ls('*.mwd');
+dateienzahl=size(inhalt);
+sensordata=[];
+for i=1:dateienzahl(1)
+    datafile=fopen(inhalt(i,:));
+    data=textscan(datafile,v,'Headerlines',7); %data imported starting with line 8
+    fclose(datafile);
+    anzahl=length(data{1});
+    datum=cell2mat(data{1});
+    month=str2double(datum(1,4:5));
+    zeit=cell2mat(data{2});
+    blanks=repmat('  ',anzahl,1);
+    timestamps=[datum,blanks,zeit];
+    %data is organised in colums, but needed in rows, therefore reformatted
+    numdaten=cell2mat(data(3:71))';
+    sensordata=[sensordata,numdaten];
+    clear numdaten
+end;

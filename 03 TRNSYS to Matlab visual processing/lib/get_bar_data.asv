@@ -1,0 +1,17 @@
+function bData = get_bar_data(trnData, trnTime, systems,state,number)
+trnSystems = fieldnames(trnData);
+
+bData = [];
+% Looping a specific system
+for iTrnsystem = 1:length(trnSystems)
+    currSys = trnSystems{iTrnsystem};
+    
+    if strcmp(currSys,'PowerSum')
+        try
+            bDataPowerAll = [bDataPowerAll get_state_points2(trnData,currSys,'Power','all')];
+        catch
+        end
+    end
+end
+
+end

@@ -1,0 +1,1 @@
+First, run the script_gen_paths.m to get the initial path settings

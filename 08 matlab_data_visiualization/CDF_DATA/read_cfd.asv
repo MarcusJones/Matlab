@@ -1,0 +1,8 @@
+datenfile=fopen('fall-sept-mit-suedeinlass-outflow-komega-irrad-test2gad_4760-Auswertung221106-temperatur.prof');
+while 1
+    tline = fgetl(datenfile);
+    if ~ischar(tline),   break,   end
+    disp(tline)
+    if isemty(regexp(tline,'[()]'));
+end
+fclose(datenfile);

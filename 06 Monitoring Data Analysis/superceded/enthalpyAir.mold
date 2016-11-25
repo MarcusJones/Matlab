@@ -1,0 +1,3 @@
+function h = enthalpyAir(T,w)
+
+h = (1.007*T - 0.026) + w.*(2501 + 1.84*T);

@@ -1,0 +1,6 @@
+Water.Temp = WaterProps(:,1)
+Water.Temp = WaterProps(:,2)
+Water.Temp = WaterProps(:,3)
+Water.Temp = WaterProps(:,4)
+Water.Temp = WaterProps(:,5)
+Water.Temp = WaterProps(:,6)

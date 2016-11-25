@@ -1,0 +1,12 @@
+function SimpleAverage = SimpleAverage(ToAvg, BreakLevel, Range1, Range2)
+
+Total = 0;
+for i = Range1:Range2
+    if ToAvg >= BreakLevel
+        Total = Total + Flow(i);
+    end
+end
+
+SimpleAverage = Total/(Range2 - Range1);
+
+

@@ -1,0 +1,59 @@
+% START FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figure - 
+figure  % A three window plot
+hold on
+
+% Start  sub plot plot
+% 
+a1 = subplot(3,1,1);
+plot(Date(TimeMask),...
+        [...
+        Cold.Temp(TimeMask,1),Cold.Temp(TimeMask,2)...
+        ],'LineWidth',2)
+datetick('x',DateFormat1)
+ylabel('Temperature [C]')
+xlabel('Time')
+ylim([10 35]);
+title('Cold temperatures')
+legend(...
+    Cold.HdrTemp(1,:),Cold.HdrTemp(TimeMask,2)...    
+    )
+% End plot
+
+% 3 Air humidity ratios; ambient, process, duct
+a2 = subplot(3,1,2);
+plot(Date(TimeMask),...
+        [...
+        Air.Amb(TimeMask,4),Air.Proc(TimeMask,4),Air.Duct(TimeMask,4)...
+        ],'LineWidth',2)
+datetick('x',DateFormat1)
+ylabel('Temperature [C]')
+xlabel('Time')
+ylim([0 0.02]);
+title('Air Absolute Humdities')
+legend(...
+    Air.HdrAmb(4,:),Air.HdrProc(4,:),Air.HdrDuct(4,:)...    
+    )
+% End plot
+
+% 3 Air enthalpies; ambient, process, duct
+a3 = subplot(3,1,3);
+plot(Date(TimeMask),...
+        [...
+        Air.Amb(TimeMask,5),Air.Proc(TimeMask,5),Air.Duct(TimeMask,5)...
+        ],'LineWidth',2)
+datetick('x',DateFormat1)
+ylabel('Temperature [C]')
+xlabel('Time')
+ylim([0 100]);
+title('Air Enthalpies')
+legend(...
+    Air.HdrAmb(5,:),Air.HdrProc(5,:),Air.HdrDuct(5,:)...    
+    )
+linkaxes([a1 a2 a3], 'x');
+hold off
+
+% End plot
+% END FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clear a1 a2 a3

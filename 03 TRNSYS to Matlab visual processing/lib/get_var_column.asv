@@ -1,0 +1,19 @@
+function varColumn = get_var_column(statePoint,variable)
+found = 0;
+for k = 1 : length(foundPoint.header)
+    searchVariable = regexp(cv{i}.type, '\w+', 'match');
+    searchVariable = searchVariable{1};
+    if strcmp(searchVariable,foundPoint.header{k})
+
+        found = 1
+    end
+
+end
+
+if found
+    return
+else
+    statePoint = 0;
+    return
+end
+

@@ -1,0 +1,139 @@
+%% TRNSYS -> MATLAB Visualization script
+% Description
+% Dependencies
+% Requires perl, check path and modules!
+
+%% Initialization and settings
+
+clear
+
+tStartTotal=tic;
+
+% Specify the directory and file name of the ini file
+iniFile = 'C:\L SZDLC\TRNVIS ver2.ini';
+%iniFile = 'C:\L SZDLC\TRNVIS Baseline ver2.ini';
+%iniFile = 'C:\L SZDLC\Baseline_NewOcc.ini';
+
+settings = load_settings(iniFile);
+
+% fromGui = testGui(settings);
+
+logThis('*** Script START ***',settings)
+
+logThis('Loaded settings',settings)
+
+%% Relative path for Matlab execution
+
+% Set the full filename and path of the initialization file here
+% Change to current directory of current file
+settings.currFile = mfilename;
+settings.currFilePath = mfilename('fullpath');
+settings.currFilePath = ...
+    settings.currFilePath(1:length(settings.currFilePath) ...
+    -length(settings.currFile));
+cd(settings.currFilePath);
+localLibDir = [pwd, '\lib'];
+cd ..;
+genLibDir = [pwd, '\01 Libraries'];
+
+% Set the environment path to include the ../lib folder
+addpath(genpath(localLibDir));
+addpath(genpath(genLibDir));
+
+clear currFile currFilePath iniFile genLibDir localLibDir
+
+%% Update the DCK file and execute
+if settings.processControl.flagRunDeckFile
+    update_dck_execute(settings);
+end
+
+%% Parse the TRNSYS log file
+if (settings.processControl.flagCheckDckErrors && settings.processControl.flagRunDeckFile)
+    parse_trnsys_log(settings);
+end
+
+%% Load files
+if settings.processControl.flagLoadFiles
+    [trnData trnTime] = load_trn_files(settings);
+end
+
+% report_state_points(trnData)
+
+%% Cut the data
+[trnData trnTime] = cut_data(trnData,trnTime,settings);
+
+%% Set the initial plot mask
+trnTime = set_plot_mask(trnTime,settings);
+
+%% Average the data (not common)
+%if settings.processControl.flagAverageTrnData
+%    script_average_all
+%end
+
+%% SVG Section
+if settings.processControl.flagUpdateSVGDiagrams
+    tStartSVG =tic;
+    snapTime = datenum(2010, 07, 20, 16, 00, 0);
+    svg_modify_all(trnData, trnTime, settings, snapTime)
+    svg_modify_CustomForReport(trnData, trnTime, settings, snapTime)
+    %    snapTime = datenum(2010, 02, 15, 12, 00, 0);
+    %    svg_modify_all(trnData, trnTime, settings, snapTime)
+    tElapsedSVG=toc(tStartSVG)/60;
+    logThis(sprintf('Created SVG Files, %.1fm elapsed',tElapsedSVG),settings)
+end
+
+%% Store the workspace for later!
+if settings.processControl.flagSaveWorkspace
+    try
+        saveWorkSpaceTarget = [settings.fileIO.saveWorkspaceFile datestr(now,'yyyy-mm-dd-HH-MM') '.mat'];
+        save(saveWorkSpaceTarget);
+        logThis(sprintf('Saved the workspace to %s', saveWorkSpaceTarget),settings)
+        clear saveWorkSpaceTarget
+    catch
+        logThis('Can''t save Workspace!',settings)
+    end
+end
+
+logThis('*** Script END ***',settings)
+
+%% Time series plots
+%Scr_time_series_plot
+
+%% Bar chart plots
+%get_barData(trnTime,trnData,searchSystem,searchState)
+%bData = get_barData(trnTime,trnData,'CTCC','Power');
+%plot_barData(trnTime,bData);
+
+%% State point investigation
+% state_point_investigate_script
+% energy_base_analysis
+% Power analysis
+% script_energy_plotting
+% script_zone_conditioning_eval
+% script_final_results
+
+%% Statistics
+% stats_all(trnData, trnTime);
+
+%% Psychrometric plot of ALL systems
+%Scr_plot_pschro
+
+%% Snippits and ongoing work
+% trnDataOrig = trnData
+% trnTimeOrig = trnTime
+% trnData = trnData2
+% trnTime = trnTime2
+% A = importdata('C:\PerfLogs\Test_000001.csv')
+% fid=fopen('C:\PerfLogs\Test_000001.csv')
+% A = textscan(fid,'%s %s %s %s %s %s %s %s %s %s','delimiter',',')
+% fclose(fid)
+%
+% sum(A(:,3:11),2)
+
+
+% [status,result] = dos('tasklist /V /FI "IMAGENAME eq TRNExe.exe "');
+
+% display(result)
+
+
+

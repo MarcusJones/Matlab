@@ -1,0 +1,38 @@
+% This script compiles the hot water state data
+% Hot.Temp.In [C]
+% Hot.Temp.Out [C]
+% Hot.Flow [L/m]
+% Hot.FlowAvg [L/m]
+% Hot.FlowAvgKH [kg/hr]
+
+% Original data 
+Hot.FlowLPM = ...
+    DatedData(:,L.LPMHot)... % [L/min]
+    ;
+
+% Smooth out data
+j = 1;
+AvgPrd = 6; % Even number!
+for i = 1:AvgPrd:length(DatedData(:,L.LPMHot))-AvgPrd
+    StartIndx = i;
+    EndIndx = i + AvgPrd;
+    HotAverage(j) = SimpleAverage(DatedData(:,L.LPMHot), 0, StartIndx, EndIndx);
+    HotDate(j) = DatedData(i+AvgPrd/2,1);
+    j = j + 1;
+end
+        
+clear j i StartIndx EndIndx AvgPrd
+
+% Interpolate
+Hot.FlowLPM_Avg = MinuteFit(HotDate,HotAverage,DatedData(:,1));
+
+clear HotAverage HotDate HotFit
+
+% Ambient air data
+Hot.Temp.In = DatedData(:,L.THotIn); % [C]
+Hot.Temp.Out = DatedData(:,L.THotOut); % [C]
+
+% Convert [L/m] to [kg/h]
+Hot.FlowKH = Hot.FlowLPM_Avg./1000.*...
+    interp1(WaterProps.Temp,WaterProps.Dens,Hot.Temp.Out,'pchip').*60;
+clear FlowAvg Hot.FlowLPM_Avg i

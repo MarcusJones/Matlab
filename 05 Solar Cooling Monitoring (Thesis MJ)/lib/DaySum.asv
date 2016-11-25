@@ -1,0 +1,41 @@
+function DaySum = DaySum(Flow, BreakLevel, Search1, Search2)
+
+% asdlfkj
+%
+
+
+Range1 = Search1;
+% % Find start of flow
+% for i = Search1:Search2
+%     if Flow(i) > BreakLevel
+%         Range1 = i; % Store the index of start
+%         break
+%     end
+% end
+
+
+Range2 = Search2;
+% % Find end of flow
+% for i = Search2:-1:Search1
+%     if Flow(i) > BreakLevel
+%         Range2 = i; % Store the index of end
+%         break
+%     end
+% end
+
+Total = 0;
+
+for i = Range1:Range2
+    Total = Total + Flow(i);
+end
+
+Sum = Total;
+
+
+Min = min(Flow(Range1:Range2));
+Max = max(Flow(Range1:Range2));
+
+
+Average = Total/(Range2 - Range1);
+
+

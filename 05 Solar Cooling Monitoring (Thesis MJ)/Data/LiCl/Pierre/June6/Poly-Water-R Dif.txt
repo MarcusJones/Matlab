@@ -1,0 +1,10 @@
+According to: Y = A + Bx + Cx^2 + ... +
+
+Polynomial degree:  2 
+"A: -102.618605530035 +/-  13.3732555288498 
+"B: -0.055538445182434 +/-  0.554200551517341 
+"C: -3.22147014183823E-03 +/-  4.67435231546353E-03 
+
+Variance:  2.71330172013161 
+Standard Deviations:  1.64721028412635 
+Applicable limits on abscissa are between: 0  and 120 

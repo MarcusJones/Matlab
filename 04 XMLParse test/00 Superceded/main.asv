@@ -1,0 +1,5 @@
+xmlread('C:\Documents and Settings\MJones\Desktop\Prog\Matlab\XMLParse\simple.xml');
+
+%xmlread();
+
+xml_load.m

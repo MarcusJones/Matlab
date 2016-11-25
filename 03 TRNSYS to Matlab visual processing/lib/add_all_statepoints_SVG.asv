@@ -1,0 +1,61 @@
+function  add_all_statepoints_SVG(trnData, settings, svgFile, system2SVG, type2SVG, searchTextID)
+%ADD_ALL_STATEPOINTS_SVG Summary of this function goes here
+%   Detailed explanation goes here
+
+
+%Base creation of new '\\text\tspan' on existing "template" groups
+%Load the svgFile using perlFile
+%Find the \\text group with an id of searchTextID
+%Using simple REGEX substitution, replace all instances of the string
+%'searchTextID' with 'newTextID'
+
+
+% PROCESS
+for i = 1:length(trnData.(system2SVG).(type2SVG))
+    currStatePoint = get_state_point(trnData,system2SVG,type2SVG,i);
+    currID = [currStatePoint.system '.' currStatePoint.type '.' num2str(currStatePoint.number)];
+    newTextID = currID;
+    
+    currXPath = 'text/tspan[]';
+    exists = SVG_element_exists(settings,svgFile,currXPath);
+    exists = str2double(exists);
+    if ~exists
+        copy_create_SVG_text(settings,svgFile,searchTextID,newTextID);
+        disp(sprintf('added %s to %s', newTextID, svgFile));
+    else
+        disp(sprintf('%s already exists in %s', newTextID, svgFile));
+    end
+end
+
+
+
+clear svgFile system2SVG type2SVG searchTextID
+
+
+% FINISHED
+
+%
+%
+% %INPUT
+%
+% svgFile = ['"' settings.fileio.trnsysprojdir 'HVAC\CTCC.svg" '];
+% system2SVG = 'CTCC';
+% type2SVG = 'Fluid';
+% searchTextID = '"FLD_template" ';
+%
+% % PROCESS
+%
+%
+% for i = 1:length(trnData.CTCC.Fluid)
+%     currStatePoint = get_state_point(trnData,system2SVG,type2SVG,i);
+%     currID = [currStatePoint.system '.' currStatePoint.type '.' num2str(currStatePoint.number)];
+%
+%     newTextID = ['"' currID '" '];
+%
+%     copy_create_SVG_text(settings,svgFile,searchTextID,newTextID);
+%
+% end
+%
+% clear svgFile system2SVG type2SVG searchTextID
+% % FINISHED
+%

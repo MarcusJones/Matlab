@@ -1,0 +1,39 @@
+% Function - Convert pscych data, create a new struct
+% MJones 10 Aug 2009
+% MJones 11 AUG 2009 Added the split on _ to break out the label number
+% only
+%
+% Inputs:
+
+function y = convert_psychrometric(TData)
+
+% sysName = {};
+% 
+% for i = 1:length(TData)
+%     % Search for various file names
+%     if regexp(TData(1,i).name, 'Office')
+%         % Plot office psych chart
+%         sysName = [sysName 'Office']
+%     elseif regexp(TData(1,i).name, 'Theatre')
+%         sysName = [sysName 'Theatre']
+%         % Plot the theatre psych chart
+%     end
+% end
+
+% for k = 1:length(sysName)
+    for i = 1:size(TData,2) % The 2nd element of size output is the number of sub-structures in TData
+        Psych(1,k).T(i) = TData(i).data(end,1);
+        Psych(1,k).w(i) = TData(i).data(end,2);
+        Psych(1,k).label(i) = {TData(i).name(1:length(TData(i).name)-4)};
+        splitLabel = regexp(Psych(1,k).label(i), '\_', 'split');
+        joinLabel = strcat(cellstr(splitLabel{1,1}{1}), '\_', cellstr(splitLabel{1,1}{2}));
+        Psych(1,k).label(i) = joinLabel;
+        Psych(1,k).systemName = sysName(k);
+    end
+% end
+
+disp(sprintf(' - Created Pschrometric data struct for %i points',i));
+
+y = Psych;
+
+end

@@ -1,0 +1,49 @@
+%% function plot_pData(trnTime,pStruct)
+% M. Jones - 03 Sep 09 - Created function
+% Plot a 'pStruct', a properly formed structure with all necessary plot
+% information
+
+% Inputs:
+% timeStruct - A properly formed time structure
+% pStruct    - A properly formed plot data structure
+
+% Outputs:
+% Plot with units, title, legend
+
+function plot_pData(timeStruct,pStruct)
+
+figure
+hold on
+
+a1 = subplot(1,1,1);
+
+set(0,'DefaultAxesColorOrder',[1 0 0;0 1 0;0 0 1;1 1 0; 46/255 139/255 87/255],...
+      'DefaultAxesLineStyleOrder',{'-','--'});
+
+plot(timeStruct.time(timeStruct.Range.mask),...
+    [...
+    pStruct.Data(timeStruct.Range.mask,:) ...
+    ],'LineWidth',1)
+
+datetick2 
+
+ylabel(pStruct.yLabel);
+
+xlabel('Time')
+
+name = [pStruct.Title ', from ' ...
+    datestr(timeStruct.Range.start, 'dd-mmmm-yy HH:MM') ' to  ' ...
+    datestr(timeStruct.Range.end, 'dd-mmmm-yy HH:MM')];
+
+title(name)
+
+try 
+    legend(strcat(pStruct.Headers, '_', pStruct.Names, '_',  ...
+        ' ', pStruct.Descriptions),'interpreter', 'none')
+                %strtrim(pStruct.Units), ...
+catch
+    disp 'ERROR HINT: Make sure length of Headers = Names = Units '
+    rethrow (lasterr)
+end
+
+%legend(strcat(pStruct.Headers, '_', ' ', pStruct.Units),'interpreter', 'none')

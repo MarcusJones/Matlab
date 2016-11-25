@@ -1,0 +1,43 @@
+function plotBoxOverview(timeStruct,dataStruct,dataMask)
+
+startTitleString = datestr(timeStruct.time(1), 'dd-mmm-yyyy HH:MM:SS');
+endTitleString = datestr(timeStruct.time(end), 'dd-mmm-yyyy HH:MM:SS');
+
+superTitle = ['TITLE HERE', ', from ', ...
+    startTitleString ' to  ' endTitleString];
+
+set(0,'DefaultAxesColorOrder',[1 0 0;0 1 0;0 0 1;1 1 0; 46/255 139/255 87/255],...
+        'DefaultAxesLineStyleOrder',{'-','--'});
+
+%plot(timeStruct.time(timeStruct.Mask,:),,'LineWidth',1)
+boxplot(dataStruct.data(timeStruct.Mask,dataMask))
+units = dataStruct.headers(dataStruct.rows.units,dataMask);
+systems = dataStruct.headers(dataStruct.rows.system,dataMask);
+types = dataStruct.headers(dataStruct.rows.pointType,dataMask);
+numbers = dataStruct.headers(dataStruct.rows.number,dataMask);
+headers = dataStruct.headers(dataStruct.rows.headers,dataMask);
+descriptions = dataStruct.headers(dataStruct.rows.description,dataMask);
+
+numbers = cellfun(@int2str, numbers, 'UniformOutput', 0);
+
+spaces = cell(size(units,2),1)';
+aaa = cell(size(units,2),1)';
+positions = 1:size(units,2);
+for i = 1:size(spaces,2)
+    spaces{i} = ' ';
+    aaa{i} = 'a';
+end
+
+%labels = strcat(systems', spaces', types', spaces', numbers', spaces', headers')
+
+labels = strcat('\n' systems', spaces', types', spaces', numbers', spaces', headers', descriptions')
+
+%labels = aaa;
+
+set(gca,'Xtick',positions,'Xticklabel',labels)
+
+h = gca;
+%get(gca)
+rotateticklabel(h);
+set(gca,'Xticklabel',{[]})
+%set(gca,'Xtick',{[]})

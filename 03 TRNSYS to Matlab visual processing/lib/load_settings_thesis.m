@@ -1,0 +1,36 @@
+% Function - Load settings file 
+% MJones
+% Loads an INI file into the Settings structure
+% Important fields: 
+% search path
+% Date range
+% Also a flag to use the date range, or complete range
+
+function y = load_settings(iniFile)
+
+% Load the Settings
+Settings = ini2struct(iniFile);
+
+% Assemble full file search mask (To search for TRNSYS output files)
+Settings.fileio.searchMask = fullfile(Settings.directories.trnsysoutputsdir ...
+    , ['*', Settings.trnsys.fileextension]);
+
+% ini2struct defaults to string input, convert to numbers;
+Settings.Range.useEntire = str2num(Settings.daterange.useentire);
+Settings.Range.start = datenum(str2num(Settings.daterange.year1), ...
+    str2num(Settings.daterange.month1), ...
+    str2num(Settings.daterange.day1), ...
+    str2num(Settings.daterange.hour1), ...
+    str2num(Settings.daterange.min1), ...
+    str2num(Settings.daterange.sec1));
+Settings.Range.end = datenum(str2num(Settings.daterange.year2), ...
+    str2num(Settings.daterange.month2), ...
+    str2num(Settings.daterange.day2), ...
+    str2num(Settings.daterange.hour2), ...
+    str2num(Settings.daterange.min2), ...
+    str2num(Settings.daterange.sec2));
+
+disp(sprintf(' - Loaded settings for project at: %s',iniFile));
+
+y = Settings;
+end

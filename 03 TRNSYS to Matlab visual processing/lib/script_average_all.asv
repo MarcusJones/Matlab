@@ -1,0 +1,81 @@
+TOOK 25 minutes las
+
+% trnData.CCA.Fluid{1}.data
+%
+% n = 4;
+% a = 1;
+
+trnTime2 = trnTime;
+trnTime2.time = [];
+for i = 1:4:length(trnTime.time)
+    trnTime2.time = [trnTime2.time trnTime.time(i)];
+end
+
+trnTime2 = set_range(trnTime2,...
+    settings.Range.start,settings.Range.end,...
+    settings.Range.useEntire);
+
+% Set the mask for plotting
+trnTime2.mask = trnTime2.operationMask;
+
+
+% b = [0 1/n];
+% x2 = filter(b,a,x)
+%
+% y = trnData.CCA.Fluid{1}.data(:,1);
+% a = [1 -1/6 -1/6 -1/6];
+% b = [1/6 1/6 1/6];
+% y2 = filter(b,a,y);
+
+
+%%
+trnData2 = trnData;
+
+disp(sprintf(' - '));
+trnSystems = fieldnames(trnData);
+% Lopp through the systems
+tic
+for i = 1:length(trnSystems)
+    disp(sprintf('%s',trnSystems{i}))
+    trnStates = fieldnames(trnData.(trnSystems{i}));
+    %disp(sprintf('     - System \''%s\'' containing;', trnSystems{i}));
+    % Loop through the state groups
+    for j = 1:length(trnStates)
+
+        % Loop through the state numbers
+        for k = 1:length(trnData.(trnSystems{i}).(trnStates{j}))
+
+            % Loop through the state properties (columns)
+            for m = 1:length(trnData.(trnSystems{i}).(trnStates{j}){k}.units)
+                trnData2.(trnSystems{i}).(trnStates{j}){k}.data = [];
+
+                for q = 1:4:length((trnData.(trnSystems{i}).(trnStates{j}){k}.data))
+                    try
+                        meanBlock = trnData.(trnSystems{i}).(trnStates{j}){k}.data(q:q+3,:);
+                    catch end
+                    averagedBlock = mean(meanBlock);
+                    trnData2.(trnSystems{i}).(trnStates{j}){k}.data = vertcat(...
+                        trnData2.(trnSystems{i}).(trnStates{j}){k}.data, ...
+                        averagedBlock );
+                end
+
+                %                 if strcmp(regexp(trnData.(trnSystems{i}).(trnStates{j}){k}.units{m}, 'kJ/hr', 'match'),'kJ/hr')
+                %                     trnData.(trnSystems{i}).(trnStates{j}){k}.data(:,m) = ...
+                %                         trnData.(trnSystems{i}).(trnStates{j}){k}.data(:,m)./3600;
+                %                     trnData.(trnSystems{i}).(trnStates{j}){k}.units{m} = '[kW]';
+                %                     % disp(sprintf ...
+                %                     % ('     - Converted kJ/hr to kW in column %i for system %s, state %s,;',...
+                %                     % m,trnSystems{i},trnData.(trnSystems{i}).(trnStates{j}){k}.type));
+                %                     cntConvert = cntConvert + 1;
+                %                 end
+            end
+
+        end
+    end
+end
+
+
+
+
+
+toc

@@ -1,0 +1,19 @@
+...Just put to a path accessible by Matlab, in Windows-OS, adapt path to OpenModelica in 'omimport.m'. 
+When using OM_1.4.3 under linux, add ".exe" in 'omrun.m'!
+
+Check out om_mat_example! 
+
+Files:
+
+Most important:
+
+omcompilerun
+omimport
+omparameter
+omrun
+
+Additional tools:
+
+omcleanup
+om_mat_example
+omparvar

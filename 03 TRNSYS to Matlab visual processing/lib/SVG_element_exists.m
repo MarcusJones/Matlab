@@ -1,0 +1,22 @@
+function [ existSvg ] = SVG_element_exists(settings,svgFile,searchXPath)
+%SVG_ELEMENT_EXISTS Summary of this function goes here
+%   Detailed explanation goes here
+
+perlFile = ['' settings.currFilePath 'lib\SVG_element_exists.pl'];
+
+existSvg = perl(perlFile, svgFile, searchXPath);
+
+%perlFile = ['"' settings.currFilePath 'lib\SVG_element_exists.pl" '];
+%svgFile = ['"' settings.fileio.trnsysprojdir 'HVAC\CTCC.svg" ']
+%searchXPath = '"tspan"';
+
+%perlCmd = [perlFile, svgFile, searchXPath];
+
+%[s r] = dos(perlCmd);
+%existSVG=str2double(r);
+
+%if ((s) || exist(r,'var'))
+%    error('Problem with create_new_SVG_Text.pl')
+%end
+
+

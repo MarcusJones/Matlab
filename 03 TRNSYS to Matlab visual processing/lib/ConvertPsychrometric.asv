@@ -1,0 +1,17 @@
+% Function - Convert pscych data, create a new struct
+% MJones 10 Aug 2009
+% Inputs:
+
+function y = ConvertPsychrometric(TData)
+
+for i = 1:size(TData,2) % The 2nd element of size output is the number of sub-structures in TData
+    Psych.T(i) = TData(i).data(end,1);
+    Psych.w(i) = TData(i).data(end,2);
+    Psych.label(i) = {TData(i).name(1:length(TData(i).name)-4)};
+    s2 = regexp(Psych.label(i), '\_', 'split');
+    s2(1,2)
+end
+
+y = Psych;
+
+end

@@ -1,0 +1,8 @@
+x = 1:100;
+Temp = property
+
+class(Temp)
+methods(Temp)
+
+
+properties(Temp)

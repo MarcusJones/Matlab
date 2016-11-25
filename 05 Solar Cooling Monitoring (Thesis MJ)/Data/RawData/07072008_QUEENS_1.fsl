@@ -1,0 +1,50 @@
+Final Storage Label File for:  07072008_QUEENS_1.csi
+Date:  7/9/2008
+Time:  11:53:11
+
+151 Output_Table   1.00 Min
+1 151 L
+2 Year_RTM  L
+3 Day_RTM  L
+4 Hour_Minute_RTM  L
+5 Power_AVG  L
+6 Tamb_C_AVG  L
+7 T_fan_AVG  L
+8 Tcal_AVG  L
+9 RHamb_AVG  L
+10 RH_fan_AVG  L
+11 RHcal_AVG  L
+12 LPMNGas_AVG  L
+13 LPMCool_AVG  L
+14 LPMHot_AVG  L
+15 LPMdesC_AVG  L
+16 LPMdesR_AVG  L
+17 DPCool_AVG  L
+18 DPCond_AVG  L
+19 DPFan_AVG  L
+20 CFMProc_AVG  L
+21 THotIn_AVG  L
+22 THotOut_AVG  L
+23 TCoolIn_AVG  L
+24 TCoolOut_AVG  L
+25 TDesCIn_AVG  L
+26 TDesCOut_AVG  L
+27 TDesRIn_AVG  L
+28 TDesROut_AVG  L
+29 TDesHIn_AVG  L
+30 TDesHOut_AVG  L
+31 TDesSump_AVG  L
+32 TEnclsure_AVG  L
+33 CDesROut_AVG  L
+34 HxEff_AVG  L
+35 DPCond_Pa_AVG  L
+36 DPFan_Pa_AVG  L
+37 DPCool_Pa_AVG  L
+38 RUSKLPS_AVG  L
+39 TBD2_AVG  L
+40 TBD3_AVG  L
+41 TBD4_AVG  L
+42 TBD5_AVG  L
+
+
+Estimated Total Final Storage Locations used per day 60480

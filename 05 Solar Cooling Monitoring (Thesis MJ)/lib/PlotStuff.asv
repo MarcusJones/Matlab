@@ -1,0 +1,16 @@
+
+plot(Air.Amb.W,...
+        [...
+        Air.Amb.W - Air.Proc.W...
+        ],'Marker','o','LineStyle','.');
+    
+ylabel('')
+xlabel('')
+
+%ylim([0 100]);
+
+title('')
+legend(...
+    'Process','Regen','Process 2','Hot In','Cold In'...
+    )
+

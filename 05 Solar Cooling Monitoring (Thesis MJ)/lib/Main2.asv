@@ -1,0 +1,186 @@
+clear
+
+LoadRawData
+LoadDataLabels
+ProcessRaw
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Figure - An overview of all the data
+boxplot(DatedData,'orientation','horizontal','labels',Headers)
+set(gca,'XScale','log')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+FirstDate = datestr(DatedData(1,1));
+LastDate = datestr(DatedData(length(DatedData(:,1)),1));
+% N = datenum(Y, M, D, H, MN, S)
+Start = datenum(2008, 6, 13, HH(i), MM(i), 0);
+End
+
+find(Air.Amb(:,2)==26.0400)
+
+% START FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure  % A three window plot
+hold on
+
+% Start  sub plot plot
+% 6 temperatures; ambient - process, cool in - out, hot in - out
+a1 = subplot(3,1,1);
+plot(DatedData(:,1),...
+        [...
+        DatedData(:,Tamb_C),DatedData(:,Tprocess),...
+        DatedData(:,TCoolIn),DatedData(:,TCoolOut),...
+        DatedData(:,THotIn),DatedData(:,THotOut)...
+        ])
+%set(gca,'XTick',[1,2,3,4,5,6]) % Doesn't work?
+datetick('x',21)
+ylabel('Temperature [C]')
+xlabel('Time')
+legend(...
+    Headers(Tamb_C,:),Headers(Tprocess,:),...
+    Headers(TCoolIn,:),Headers(TCoolOut,:),...
+    Headers(THotIn,:),Headers(THotOut,:)...
+    )
+% End plot
+
+% Start sub plot
+% 3 Relative humidities; ambient, process, calibrated
+a2 = subplot(3,1,2);
+plot(DatedData(:,1),[...
+    DatedData(:,RHamb)...
+    DatedData(:,RHprocess)...
+    DatedData(:,RHcal)...
+    ])
+%set(gca,'XTick',[1,2,3,4,5,6]) % Doesn't work?
+datetick('x',13)
+ylabel('Relative Humidity [%]')
+xlabel('Time')
+legend(...
+    Headers(RHamb,:),...
+    Headers(RHprocess,:),...
+    Headers(RHcal,:)...
+    )
+% End plot
+
+% Start sub plot
+% 4 Flow rates; DesC, DesR, Cool, Hot
+a3 = subplot(3,1,3);
+plot(DatedData(:,1),[...
+    DatedData(:,LPMdesC),DatedData(:,LPMdesR),...
+    DatedData(:,LPMCool),DatedData(:,LPMHot)...
+    ])
+%set(gca,'XTick',[1,2,3,4,5,6]) % Doesn't work?
+datetick('x',15)
+ylabel('Flow Rates [LPM]')
+xlabel('Time')
+legend(...
+    Headers(LPMdesC,:),Headers(LPMdesR,:),...
+    Headers(LPMCool,:),Headers(LPMHot,:)...
+    )
+linkaxes([a1 a2 a3], 'x');
+hold off
+
+TwoPointMollier(Air.Amb(:,2),Air.Amb(:,4),Air.Proc(:,2),Air.Proc(:,4));
+% hold on
+% plot([5,5,10],[6,6,10],'-')
+
+
+% End plot
+% END FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% RH1 = ;     %RH in
+% RH2 = ;     %
+% Tamb = ;
+% Tproc = ;
+
+% a1 = subplot(3,1,1);
+% plot(DatedData(:,1),[DatedData(:,T1),DatedData(:,T2),DatedData(:,T3),DatedData(:,T4)])
+% datetick('x',1)
+% xlabel('Temperature')
+% ylabel('Time')
+% legend(Headers(T1,:),Headers(T2,:),Headers(T3,:),Headers(T4,:))
+
+% %Plot Temps
+% S1 = 16;
+% S2 = 17;
+% S1Label = char(labels.textdata(5+S1));
+% S2Label = char(labels.textdata(5+S2));
+% SizeS1 = size(S1Label);
+% SizeS2 = size(S2Label);
+% S1Label = S1Label(3:SizeS1(2)-3);
+% S2Label = S2Label(3:SizeS2(2)-3);
+% 
+% S3 = 20;
+% S4 = 21;
+% S3Label = char(labels.textdata(5+S3));
+% S4Label = char(labels.textdata(5+S4));
+% SizeS3 = size(S3Label);
+% SizeS4 = size(S4Label);
+% S3Label = S3Label(3:SizeS3(2)-3);
+% S4Label = S4Label(3:SizeS4(2)-3);
+% 
+% a1 = subplot(3,1,1);
+% plot(DatedData(:,1),[DatedData(:,S1),DatedData(:,S2),DatedData(:,S3),DatedData(:,S4)])
+% datetick('x',13)
+% xlabel('Temperature')
+% ylabel('Time')
+% legend(Headers(1,:))
+% 
+% plot(DatedData(:,1),[DatedData(:,S1),DatedData(:,S2),DatedData(:,S3),DatedData(:,S4)])
+% 
+% 
+% Ta = 11;
+% Tp = 13;
+% TaLabel = char(labels.textdata(5+Ta));
+% TpLabel = char(labels.textdata(5+Tp));
+% SizeTa = size(TaLabel);
+% SizeTp = size(TpLabel);
+% TaLabel = TaLabel(3:SizeTa(2)-3);
+% TpLabel = TpLabel(3:SizeTp(2)-3);
+% 
+% 
+% 
+% a2 = subplot(3,1,2);
+% plot(DatedData(:,1),[DatedData(:,Ta),DatedData(:,Tp)])
+% datetick('x',13)
+% xlabel('Temperature')
+% ylabel('Time')
+% legend(TaLabel,TpLabel)
+% 
+% R1 = 12;
+% R2 = 14;
+% R1Label = char(labels.textdata(5+R1));
+% R2Label = char(labels.textdata(5+R2));
+% SizeR1 = size(R1Label);
+% SizeR2 = size(R2Label);
+% R1Label = R1Label(3:SizeR1(2)-3);
+% R2Label = R2Label(3:SizeR2(2)-3);
+% 
+% 
+% 
+% a3 = subplot(3,1,3);
+% plot(DatedData(:,1),DatedData(:,R1),...
+%     DatedData(:,1),DatedData(:,R2),...
+%     DatedData(100,1),[0, 100]... %'LineWidth',[2,2,2]... THere are little dots!!
+%     )
+% datetick('x',13)
+% xlabel('Temperature')
+% ylabel('Time')
+% legend(R1Label,R2Label)
+% 
+% %subplot(3,1,3)
+% %plot(a3,[DatedData(100,1), DatedData(100,1)],[0, 100])
+% %The current axes is the last one defined by subplot
+% linkaxes([a1 a2 a3], 'x'); 
+
+
+
+
+% hold on
+% subplot(2,1,1)
+% semilogx(lambda,Psun,'Color','r');
+% semilogx(lambda,P60,'Color','r');
+% 
+% subplot(2,1,2)
+% semilogx(Refx,Refy,'Color','k');

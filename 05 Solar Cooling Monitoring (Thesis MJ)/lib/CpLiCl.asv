@@ -1,0 +1,80 @@
+function CpLiCl = CpLiCl(T,C)
+
+% Based on Conde 2003 (Ref. 212)
+% Uses empircal fit to calculate specific thermal capacity of solution given 
+% Temperature T [K]
+% Concentration C [%]
+% Returns Cp [kJ/kg/K]
+clear
+T = 50
+C = 20
+
+Temp = T + 273.15;
+Conc = C/100;
+
+phi=Temp/228 - 1; % New reduced temperature (What is 228?)
+
+% Constants to the fit of water specific thermal capacity
+A = 1.43980;
+B = -1.24317;
+C = -0.12070;
+D = 0.12825;
+E = 0.62934;
+F = 58.5225;
+G = -105.6343;
+H = 47.7948;
+
+% Constants to the fit of LiCl specific thermal capacity
+A = 1.43980;
+B = -1.24317;
+C = -0.12070;
+D = 0.12825;
+E = 0.62934;
+F = 58.5225;
+G = -105.6343;
+H = 47.7948;
+
+CpWater = A + B*phi^0.02 + C*phi^0.04 + D*phi^0.06 + E*phi^1.8 + F*phi^8;
+
+if Conc > 0.31
+    f1 = D + E*Conc;
+else
+    f1 = A*Conc + B*Conc^2 + C*Conc^3;
+end
+
+f2 = F*phi^0.02 + G*phi^0.04 + H*phi^0.06;
+
+CpLiCl = CpWater*(1 - f1*f2);
+
+
+
+
+% 
+% 
+% CritTWater = 374 + 273.15; % Critical temperature of water
+% CritDensWater = 322; % [kg/m3]
+% phi = Temp/CritTWater; % Reduced temperature
+% tau = 1 - phi; 
+% 
+% MassFrac = Conc/(1-Conc); % Mass fraction of solute to solvent
+% 
+% Fitted constants for empirical relation; water density
+% B0 = 1.993771843;
+% B1 = 1.0985211604;
+% B2 = -0.5094492996;
+% B3 = -1.7619124270;
+% B4 = -44.9005480267;
+% B5 = -723692.26118632;
+% 
+% Fitted constants for empirical relation; LiCl density
+% r0 = 1;
+% r1 = 0.540966;
+% r2 = -0.303792;
+% r3 = 0.100791;
+% 
+% Density of water
+% DensWater = CritDensWater * (1+B0*tau^(1/3) + B1*tau^(2/3) + ...
+%     B2*tau^(5/3) + B3*tau^(16/3) + B4*tau^(43/3) + B5*tau^(110/3));
+% 
+% Density of LiCl
+% DensLiCl = DensWater*(r0*MassFrac^0+r1*MassFrac^1+r2*MassFrac^2+r3*MassFrac^3);

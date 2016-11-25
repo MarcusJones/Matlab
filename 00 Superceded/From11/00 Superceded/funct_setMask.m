@@ -1,0 +1,25 @@
+function trnTime = set_plot_mask(trnTime,settings)
+
+% Re-create the operation mask from the settings
+if settings.operationMask.useOperationMask
+    hourFractions=trnTime.time-floor(trnTime.time);
+    startTime=datenum(0,0,0,settings.operationMask.startOperationHour,0,0);
+    stopTime=datenum(0,0,0,settings.operationMask.endOperationHour,0,0);
+    trnTime.operationMask = ((hourFractions>=startTime) & (hourFractions<=stopTime));
+else
+    trnTime.operationMask = logical(ones(length(trnTime.operationMask),1));
+end
+
+% Re-create the plot range mask
+if settings.plotRange.usePlotRange
+    plotRangeStart = datenum(settings.plotRange.plotRangeStart);
+    plotRangeEnd = datenum(settings.plotRange.plotRangeEnd);
+    trnTime.plotRange = ((trnTime.time>=plotRangeStart) & (trnTime.time<=plotRangeEnd));
+else
+    trnTime.plotRange =  logical(ones(length(trnTime.operationMask),1));
+end
+
+% The final plot mask is AND of both
+trnTime.mask = (trnTime.operationMask & trnTime.plotRange);
+
+end

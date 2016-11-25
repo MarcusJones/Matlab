@@ -1,0 +1,29 @@
+% This script writes two ranges of data to plot over
+
+% Load date vector
+Date = ...
+    DatedData(:,1)...  % Date
+    ;
+
+% Load first range of dates for data
+% datestr(DatedData(length(DatedData(:,1)),1) - DatedData(1,1) )
+% N = datenum(Y, M, D, H, MN, S)
+Start = datenum(2008, 7, 15, 9, 0, 0);
+Start = find(Date==Start); % Use specified start
+Start = 1;                           % Or just use start of data 
+End =   datenum(2008, 7, 15, 17, 0, 0);
+End = find(Date==End); % Use specified ending
+End = length(Date); % Or just use the end of data
+TimeMask = Start:End;
+DateFormat1 = 0;
+
+% Load second range of dates for data 
+Start = datenum(2008, 6, 26, 15, 10, 0);
+Start = find(Date==Start);
+End = datenum(2008, 6, 26, 15, 50, 0);
+End = find(Date==End); % Use specified ending
+%End = length(DatedData(:,1)); % Or just use all the data
+TimeMask2 = Start:End;
+DateFormat2 = 15;
+
+clear Start End i

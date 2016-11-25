@@ -1,0 +1,49 @@
+% Function - Load the TRNSYS output files
+% MJones
+% Inputs:
+% directory - the target directory
+% search - the file search profile ie/ *.out
+
+function TData = load_files(directory,search)
+
+% List the files in the directory
+files = dir(search);
+
+% Read the files
+for i = 1:length(files)
+    fileToRead = fullfile(directory,files(i).name);
+    DELIMITER = '\t'; % TAB delimeted
+    HEADERLINES = 2;
+    ALL_DATA(i) = importdata(fileToRead, DELIMITER, 2);
+end
+
+% (Don't know why a second loop is needed...)
+for i = 1:size(files,1)
+    % Assign file name
+    ALL_DATA(i).name = files(i).name;
+    % The column headers are the first index of the textdata array
+    hdr = char(ALL_DATA(i).textdata(1,1));
+    ALL_DATA(i).header = regexp(hdr, '\S+', 'match'); % Collect tokens that are any number of non-white space characters
+    % The units are contained in .colheaders
+    ALL_DATA(i).units = ALL_DATA(i).colheaders;
+    % Time is stored by TRNSYS in the first column, this is seperated
+    ALL_DATA(i).hours = ALL_DATA(i).data(:,1);
+    ALL_DATA(i).data(:,1) = []; % Remove the first column (hours)
+    ALL_DATA(i).header(:,1) = []; % Remove the corresponding hours header
+    ALL_DATA(i).units(:,1) = []; % And the corresponding units
+%   ALL_DATA = rmfield(ALL_DATA(i), 'textdata');
+    % Convert the hours into a MATLAB Datenum
+    ALL_DATA(i).datenum = datenum(2000,0,0,ALL_DATA(i).hours,0,0);
+end
+
+disp('Finished in TDATA load', i)
+
+sprintf('Loaded %i files from',i,Settings.fileio.searchMask)
+
+ALL_DATA = rmfield(ALL_DATA, 'textdata');
+ALL_DATA = rmfield(ALL_DATA, 'colheaders');
+
+TData = ALL_DATA;
+
+
+end

@@ -1,0 +1,110 @@
+%% Energy consumption
+
+%% Get ALL energy points, and put them in one flat struct array
+
+trnSystems = fieldnames(trnData);
+bDataTempAll = [];
+% Looping through the systems, collect all power states
+for iTrnsystem = 1:length(trnSystems)
+    currSys = trnSystems{iTrnsystem};
+    try
+    bDataTempAll = [bDataTempAll get_state_points2(trnData,currSys,'ZoA','all')];
+    catch
+    end
+end
+
+
+%Divide the
+
+
+%% Average the temperature for each month, store in a n x 12 array
+% The headers will be in one column array
+
+[Y, M, D, H, MN, S] = datevec(trnTime.time(2) - trnTime.time(1));
+Interval = H + MN/60 + S/3600;
+
+temperatureVec = [];
+zonesVec = [];
+monthsVec = [];
+zones = {};
+monthsArr = {};
+% Loop each power point;
+for iPwrPoint = 1:length(bDataTempAll);
+    % Loop each month
+    zones{iPwrPoint} = bDataTempAll{iPwrPoint}.description;
+    startDnum = datenum(2000,1,0,0,0,0);
+    for iMonth = 2:13
+        currStartDnum = datenum(2000,iMonth-1,0,0,0,0);
+        currEndDnum = datenum(2000,iMonth,0,0,0,0);
+        monthsArr{iMonth-1} = datestr(currEndDnum,'mmm');
+        %currEndDnum - currStartDnum
+        currMask =((trnTime.time>=currStartDnum) & (trnTime.time<=currEndDnum));
+        %temperatureVec(iPwrPoint,iMonth-1) = mean(bDataTempAll{iPwrPoint}.data(currMask));
+        temperatureVec = [temperatureVec mean(bDataTempAll{iPwrPoint}.data(currMask))];
+        zonesVec = [zonesVec iPwrPoint];
+        monthsVec = [monthsVec iMonth-1];
+    end
+end
+%bar3(temperatureVec,1,'grouped')
+bar3(temperatureVec,1,'detached')
+scatter3(zonesVec,monthsVec,temperatureVec)
+%mesh
+%scatter3(1:12,temperatureVec(:,1),temperatureVec(1))
+%bar3(temperatureVec,1,'stacked')
+%ylabel('Power consumers')
+%xlabel('Months')
+zlabel('Energy [kWh]')
+set(gca,'XTickLabel',monthsArr)
+set(gca,'YTickLabelMode','manual')
+set(gca,'YTick',1:length(bDataTempAll))
+set(gca,'YTickLabel',zones)
+
+load('cmapMonths')
+set(gcf,'Colormap',cmapMonths)
+%colormap('jet')
+%colormap('autumn')
+%mycmap = get(gca,'Colormap');
+%cmapMonths = get(gcf,'Colormap')
+%TIntegral(i) = sum(data(Range.mask,i))*Interval;
+
+%bar(sum(temperatureVec,2));
+
+overallMean = [];
+for iPwrPoint = 1:length(bDataTempAll);
+    %bDataTempAll{iPwrPoint}.data(:,1)
+    overallMean = [overallMean, mean(bDataTempAll{iPwrPoint}.data(:,1))]
+end
+mean(overallMean)
+
+
+%% Plot the data!
+
+
+
+% %%
+% barArray = [];
+% barHdr = [];
+% barDesc = {};
+%
+% %Loop through the power states
+% for bIdx = 1:length(bDataCTCC)
+%     barSystem = bDataCTCC{bIdx};
+%     barArray = [barArray barSystem.data];
+%     barHdr = [barHdr barSystem.number];
+%     barDesc = [barDesc barSystem.description];
+% end
+%
+% barData = sum(barArray)*trnTime.intervalHours;
+%
+% bData.array = barArray;
+% bData.hdr = barHdr;
+% bData.desc = barDesc;
+% bData.data = barData;
+% bData.system = 'System name...';
+%
+%
+% plot_barData(trnTime,bData)
+%
+% powers = get_pData(get_state_points2(trnData,'Office','Power','all'),'Ef');
+% massFlow = get_pData(get_state_points2(trnData,'Office','MoistAir','all'),'mf');
+% plot_pData_array(trnTime,[powers, massFlow])

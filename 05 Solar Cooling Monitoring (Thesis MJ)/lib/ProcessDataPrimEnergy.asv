@@ -1,0 +1,16 @@
+% This script compiles the primary energy consumption data
+
+% For two state positions and flow 
+% Energy.Hdr = char(...
+%     'Gas',... 
+%     'Electricty'...
+%     );
+
+% Primary energy
+Energy.Gas = ...
+    DatedData(:,L.LPMNGas)...  % Gas consumption rate
+    ;
+
+Energy.Elec = ...
+    DatedData(:,L.Power)...  % Electricty consumption rate
+    ;
