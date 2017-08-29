@@ -5,15 +5,22 @@ clear all
 env_path = 'C:\';
 
 % iC Laptop:
-env_path = 'D:\';
+env_path = 'C:\LOCAL_REPO\Ref_Matlab';
 %% 
 %cd('C:\Projects\AllScripts\L Matlab');
 %cd('D:\AllScripts\L Matlab');
-cd(strcat(env_path, 'AllScripts\L Matlab'))
+cd(strcat(env_path, ''))
 
 script_gen_paths
 
-%% Load
+%% Load testing
+test_path = 'C:\testdir_eso_out\';
+test_file = 'testout_regular.mat';
+load(strcat(test_path,test_file));
+
+
+
+%% Load automated
 
 load(strcat(env_path,'Projects\IDFout\ProposedTableZone Summary dataframe.mat'));
 load(strcat(env_path,'Projects\IDFout\BaselineTableZone Summary dataframe.mat'));
