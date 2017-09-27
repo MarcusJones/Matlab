@@ -7,8 +7,8 @@ function selectedDataMask = func_selection(dataStruct,searchStruct)
     for idxSearch = 1:size(searchStruct,2)
         inHeaderDef = searchStruct{idxSearch}{1};
         % Get the row number of the matched headerDef 
-        for idxHeaderDef = 1:size(dataStruct.headerDef,1)
-            thisHeaderDef = dataStruct.headerDef{idxHeaderDef,1};
+        for idxHeaderDef = 1:size(dataStruct.headerDef,2)
+            thisHeaderDef = dataStruct.headerDef{1,idxHeaderDef};
             if ~isempty(regexp(thisHeaderDef, inHeaderDef, 'match'))
                 %headerMask = thisHeaderDef;
                 %headerRow = dataStruct.headerDef{idxHeaderDef,2};

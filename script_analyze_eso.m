@@ -13,6 +13,18 @@ cd(strcat(env_path, ''))
 
 script_gen_paths
 
+%% TESTING ONLY
+df = a0
+pdef = func_get_pdef(1);
+
+mask = func_selection(df,{{'Name','Site Outdoor Air Drybulb Temperature'}});
+
+new_df = func_get_new_df(df,mask);
+
+
+plot_time_series2(new_df,pdef)
+
+
 %% Load testing
 test_path = 'C:\testdir_eso_out\';
 test_file = 'testout_regular.mat';
