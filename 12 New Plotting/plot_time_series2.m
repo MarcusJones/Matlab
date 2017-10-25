@@ -51,7 +51,7 @@ elseif isfield(p_def,'legend_def')
     this_leg = func_get_labels2(frame,dmask,legend_def);
 else
     % Take all headers
-    nheads = size(frame.headerDef,1);
+    nheads = size(frame.headerDef,2);
     legend_def = 1:nheads;
     this_leg = func_get_labels2(frame,dmask,legend_def);    
 end

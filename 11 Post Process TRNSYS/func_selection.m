@@ -1,10 +1,11 @@
-function selectedDataMask = func_selection(dataStruct,searchStruct)
+function selectedDataMask = func_selection(and_or, dataStruct,searchStruct)
 
 %     searchStruct = {{'pointType','.'}};
     
-    numSearches = size(searchStruct,2);
+    numSearches = size(searchStruct,1);
     blankMask = logical(zeros(size(dataStruct.headers,2),numSearches))';
-    for idxSearch = 1:size(searchStruct,2)
+    
+    for idxSearch = 1:size(searchStruct,1)
         inHeaderDef = searchStruct{idxSearch}{1};
         % Get the row number of the matched headerDef 
         for idxHeaderDef = 1:size(dataStruct.headerDef,2)
@@ -29,10 +30,22 @@ function selectedDataMask = func_selection(dataStruct,searchStruct)
         
         %display thisHeaderDef
     end
-    selectedDataMask = logical(ones(size(dataStruct.headers,2),1))';
-    for idxMask = 1:size(blankMask,1)
-        selectedDataMask = selectedDataMask & blankMask(idxMask,:);
+    
+    if strcmp(and_or,'and') 
+        %selectedDataMask = logical(ones(size(dataStruct.headers,2),1))';
+        selectedDataMask = blankMask(1,:);
+        for idxMask = 1:size(blankMask,1)
+            selectedDataMask = selectedDataMask & blankMask(idxMask,:);
+        end
+    elseif strcmp(and_or,'or') 
+        %selectedDataMask = logical(ones(size(dataStruct.headers,2),1))';
+        selectedDataMask = blankMask(1,:);
+        for idxMask = 1:size(blankMask,1)
+            selectedDataMask = selectedDataMask | blankMask(idxMask,:);
+        end
+    else
+        error('Use "and" or "or" only' )
     end
     
-
+    sum(blankMask')
     display(sprintf('Found %i',sum(selectedDataMask)))

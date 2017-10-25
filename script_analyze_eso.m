@@ -6,23 +6,206 @@ env_path = 'C:\';
 
 % iC Laptop:
 env_path = 'C:\LOCAL_REPO\Ref_Matlab';
-%% 
+ 
 %cd('C:\Projects\AllScripts\L Matlab');
 %cd('D:\AllScripts\L Matlab');
 cd(strcat(env_path, ''))
 
 script_gen_paths
 
-%% TESTING ONLY
-df = a0
+% LOAD ALL
+mat = dir('C:\Dropbox\EnergyDB\IDF Project\OUTPUT\*.mat');
+for q = 1:length(mat) 
+    load(strcat('C:\Dropbox\EnergyDB\IDF Project\OUTPUT\', mat(q).name));
+end
+
+clear q 'mat' 'env_path'
+
+
+% Convert headers to all strings
+df_PTHP = func_convert_to_strings(df_PTHP);
+df_VRF = func_convert_to_strings(df_VRF);
+
+%heads = df_PTHP.headers';
+%head_defs = df_PTHP.headerDef';
+
+% Convert kg/s to m3/hr
+factor = 3600.0 ./ 1.222;
+df_PTHP = func_convert(df_PTHP, 'Units', 'kg/s', 'm3/hr', factor);
+df_VRF = func_convert(df_VRF, 'Units', 'kg/s', 'm3/hr', factor);
+
+%% Plot air
+this_df = df_PTHP;
+this_df = df_VRF;
 pdef = func_get_pdef(1);
 
-mask = func_selection(df,{{'Name','Site Outdoor Air Drybulb Temperature'}});
+mask1 = func_selection(this_df,{{'Name','System Node Mass Flow Rate '}});
+new_df = func_get_new_df(this_df,mask1);
 
-new_df = func_get_new_df(df,mask);
+%new_df.data = new_df.data * 3600 / 1.2;
+%C = cell(1, size(new_df.headers(4,:),2));
+%C(:) = {'m3/hr'};
+%new_df.headers(4,:) = C(:);
+plot_time_series2(new_df,pdef);
 
 
-plot_time_series2(new_df,pdef)
+%% Plot power PTHP
+this_df = df_PTHP;
+this_df.headers'
+mask1 = func_selection('or',this_df,{
+    {'Name','Zone Packaged Terminal Heat Pump Electric Power '},
+    {'Name','Zone Packaged Terminal Heat Pump Electric Power '},
+    {'Name','Zone Packaged Terminal Heat Pump Sensible Heating Rate '},
+    {'Name','Zone Packaged Terminal Heat Pump Sensible Cooling Rate '},
+    {'Name','Zone Packaged Terminal Heat Pump Total Heating Rate '},
+    {'Name','Zone Packaged Terminal Heat Pump Total Cooling Rate '},
+    {'Name','Fan Electric Power '},
+    });
+
+pdef = func_get_pdef(1);
+
+new_df = func_get_new_df(this_df,mask1);
+
+plot_time_series2(new_df,pdef);
+
+%% Plot power VRF
+this_df = df_VRF;
+
+mask1 = func_selection('or',this_df,{
+    {'Name','Zone Packaged Terminal Heat Pump Electric Power '},
+    {'Name','Zone Packaged Terminal Heat Pump Electric Power '},
+    {'Name','Zone Packaged Terminal Heat Pump Sensible Heating Rate '},
+    {'Name','Zone Packaged Terminal Heat Pump Sensible Cooling Rate '},
+    {'Name','Zone Packaged Terminal Heat Pump Total Heating Rate '},
+    {'Name','Zone Packaged Terminal Heat Pump Total Cooling Rate '},
+    {'Name','Fan Electric Power '},
+    });
+
+pdef = func_get_pdef(1);
+
+new_df = func_get_new_df(this_df,mask1);
+
+plot_time_series2(new_df,pdef);
+
+
+%% TESTING ONLY - PLOT
+this_df = df_VRF;
+
+pdef = func_get_pdef(1);
+
+mask1 = func_selection(this_df,{{'Name','Site Outdoor Air Drybulb Temperature'}});
+mask1 = func_selection(this_df,{{'Name','Zone Mechanical Ventilation'}});
+
+new_df = func_get_new_df(this_df,mask);
+
+plot_time_series2(new_df,pdef);
+
+%% STATS
+this_df = df_VRF;
+interval = 60;
+jprintf_mj(-1,'****** Time step %.2f hours ********\n', interval);
+
+%mask1 = func_selection(this_df,{{'Name','Site Outdoor Air Drybulb Temperature'}});
+mask1 = func_selection(this_df,{{'Name','Zone Mechanical Ventilation'}});
+mask1 = func_selection(this_df,{{'Name','.'}});
+
+mask = mask1;
+new_df = func_get_new_df(this_df,mask);
+
+formatSpec = '%20s, %20s, %20s, %20s, %20s, %20s\n';
+
+jprintf_mj(-1,sprintf(formatSpec,this_df.headerDef{:}));
+
+for idxCol = 1:size(new_df.headers,2)
+        row = new_df.headers(:,idxCol);
+        jprintf(-1,sprintf(formatSpec,row{:}));
+    %jprintf_mj(-1,'\n');
+end
+
+
+
+%% TESTING ONLY - TABLE
+interval = 60;
+jprintf_mj(-1,'****** Time step %.2f hours ********\n', interval);
+
+
+df.headers'
+
+for idxCol = 1:size(df.headers,2)
+    for idxRow = 1:size(df.headers,1)
+        %jprintf(-1,'%10s, ',framedHead{idxRow,idxCol});
+        elem = num2str(df.headers{idxRow,idxCol});
+        jprintf_mj(-1,'%s, ',elem);
+    end
+    jprintf_mj(-1,'\n');
+end
+
+
+t = PrintTable;
+row = {};
+for idxCol = 1:size(df.headers,2)
+        row = df.headers(:,idxCol);
+        t.addRow(row{:});
+    %jprintf_mj(-1,'\n');
+end
+
+for idxCol = 1:size(df.headers,2)
+    for idxRow = 1:size(df.headers,1)
+        %jprintf(-1,'%10s, ',framedHead{idxRow,idxCol});
+        elem = num2str(df.headers{idxRow,idxCol});
+        jprintf_mj(-1,'%s, ',elem);
+    end
+    jprintf_mj(-1,'\n');
+end
+
+t.display;
+t.HasHeader = true;
+
+
+t.addRow('123','456','789');
+t.addRow('1234567','1234567','789');
+t.addRow('1234567','12345678','789');
+t.addRow('12345678','123','789');
+% sprintf-format compatible strings can also be passed as last argument:
+% single format argument:
+t.addRow(123.456789,pi,789,{'%3.4f'});
+% custom format for each element:
+t.addRow(123.456789,pi,789,{'%3.4f','%g','format. dec.:%d'});
+t.addRow('123456789','12345678910','789');
+t.addRow('adgag',uint8(4),4.6);
+t.addRow(@(mu)mu*4+56*245647869,t,'adgag');
+t.addRow('adgag',4,4.6);
+% Call display
+t.display;
+t.HasHeader = true;
+
+%% OLD OBSELETE
+variable_list = who;
+matches_bool = strncmpi(variable_list,'df_',3);
+for cv = who('gdp*')' %transpose to get a row cell array
+  eval(sprintf('mean%1$s = (%1$s - mean(%1$s)) / std(%1$s);', cv{1})); %1$s is replaced by var name, output is named meanvarname
+end
+%same with 'reer*'
+
+
+%% asdf
+%df_list = {}
+for f_idx = 1:size(variable_list,1)
+    if matches_bool(f_idx)
+        this_df_name = variable_list(f_idx);
+        this_str = sprintf('this_df = %s',this_df_name{1, 1}  );
+        eval(this_str)
+        for idxCol = 1:size(this_df.headers,2)
+            for idxRow = 1:size(this_df.headers,1)
+                %jprintf(-1,'%10s, ',framedHead{idxRow,idxCol});
+                elem = num2str(this_df.headers{idxRow,idxCol});
+                this_df.headers{idxRow,idxCol} = elem;
+            end
+        end
+    else
+        continue
+    end
+end
 
 
 %% Load testing
